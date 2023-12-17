@@ -13,7 +13,6 @@ import java.util.Scanner;
 
 // 2.1
 // mistakes made?
-// prompt error if repeat many times
 
 public class TypingGame {
     private static final int TOTAL_WORDS = 10;
@@ -246,8 +245,6 @@ public class TypingGame {
 
             return choice == JOptionPane.YES_OPTION;
         }
-
-        // Other methods...
     }
 
     private GameType askUserForGameType() {
