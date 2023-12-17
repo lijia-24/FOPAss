@@ -78,6 +78,12 @@ public class TypingGame {
         remainingTime = INITIAL_TIME;
         updateTimerLabel();
 
+        // Stop the previous timer if it exists
+        if (timer != null) {
+            timer.stop();
+        }
+
+        // Create a new Timer object
         timer = new Timer(1000, new TimerActionListener());
         timer.start();
 
@@ -97,8 +103,11 @@ public class TypingGame {
             wordDisplay.append(randomWord).append(" ");
         }
 
+        remainingTime = INITIAL_TIME; // Reset the remaining time
+
         showWordsWithColor(wordDisplay.toString(), Color.DARK_GRAY);
     }
+
 
     private List<String> readWordsFromFile() {
         List<String> words = new java.util.ArrayList<>();
@@ -175,7 +184,11 @@ public class TypingGame {
                     remainingTime--;
                     updateTimerLabel();
                 } else {
-                    timer.stop();  // Stop the timer first
+                    // Stop the timer first
+                    timer.stop();
+
+                    // Set the timer object to null
+                    timer = null;
 
                     inputField.setEnabled(false);
 
@@ -208,7 +221,7 @@ public class TypingGame {
                             } else {
                                 // Start a new game with different text
                                 loadWords();  // Load new words for the user to input
-                                startGame();
+                                startGame();  // Create a new Timer object for a consistent timer
                             }
                         } else {
                             // User chose not to play again, exit the program
@@ -255,8 +268,16 @@ public class TypingGame {
     private void startGameWithSameText() {
         // Display the same text the user just typed
         showWordsWithColor(String.join(" ", printedWords), Color.DARK_GRAY);
-        // Note: Do not call startGame() here to avoid starting the timer again immediately
+
+        // Reset the timer and initialize it to the original time
+        remainingTime = INITIAL_TIME;
+        updateTimerLabel();
+
+        // Create a new Timer object
+        timer = new Timer(1000, new TimerActionListener());
+        timer.start();
     }
+
 
     private void accuracyAndWPM(String[] userType) {
         StyledDocument doc = wordPane.getStyledDocument();
