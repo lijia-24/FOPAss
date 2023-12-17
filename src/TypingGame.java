@@ -12,6 +12,8 @@ import java.util.Random;
 import java.util.Scanner;
 
 // 2.1
+// mistakes made?
+// prompt error if repeat many times
 
 public class TypingGame {
     private static final int TOTAL_WORDS = 10;
