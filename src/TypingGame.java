@@ -311,6 +311,10 @@ public class TypingGame {
                 "Game Over", JOptionPane.INFORMATION_MESSAGE);
     }
 
+
+
+
+
     private class InputDocumentListener implements DocumentListener {
         @Override
         public void insertUpdate(DocumentEvent e) {
@@ -339,3 +343,56 @@ public class TypingGame {
         }
     }
 }
+
+
+
+// world - wor = 3 correct
+// example - examplee = correct, but have 1 incorrect
+    /*
+private void accuracyAndWPM(String[] userType) {
+    StyledDocument doc = wordPane.getStyledDocument();
+    int correctCharacters = 0;
+    int totalCharacters = 0;
+    int cursorPosition = 0;
+    incorrectWordCount = 0;
+
+    for (int i = 0; i < Math.min(userType.length, printedWords.length); i++) {
+        String userWord = userType[i];
+        String printedWord = printedWords[i];
+
+        int minLength = Math.min(userWord.length(), printedWord.length());
+        int lastCorrectPosition = 0; // Track the last correct character position
+
+        for (int j = 0; j < userWord.length(); j++) {
+            totalCharacters++;
+            if (j < printedWord.length() && userWord.charAt(j) == printedWord.charAt(j)) {
+                correctCharacters++;
+                lastCorrectPosition = j + 1; // Update last correct position
+            } else {
+                // Count mistakes only after the last correct position
+                if (j >= lastCorrectPosition) {
+                    incorrectWordCount++;
+                }
+            }
+        }
+
+        // Add space between words (except for the last word)
+        totalCharacters += (userWord.length() < printedWord.length()) ? 1 : 0;
+    }
+
+    double accuracy = ((double) correctCharacters / totalCharacters) * 100;
+    double wpm = (totalCharacters / 5.0) / (INITIAL_TIME / 60.0);
+
+    JOptionPane.showMessageDialog(null,
+            String.format("Game Over!\nAccuracy: %.2f%%\nWPM: %.2f\nIncorrect Words: %d",
+                    accuracy, wpm, incorrectWordCount),
+            "Game Over", JOptionPane.INFORMATION_MESSAGE);
+}
+*/
+
+//?? if hello - helloo c-? inc-?
+//?? if hello - hell c-? inc-?
+//?? if hello - helo c-? inc-?
+//?? backspace - inc, accuracy & wpm?
+//?? last word - if not finish type the correct character still count correct?
+
