@@ -430,3 +430,6 @@ public class TypingGame {
         }
     }
 }
+
+// mistakes
+// punctuation
