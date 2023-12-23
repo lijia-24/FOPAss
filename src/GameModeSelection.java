@@ -63,7 +63,3 @@ public class GameModeSelection {
         wordMode.showWordModeOptions(); // Call showWordModeOptions on WordMode instance
     }
 }
-
-// need to enter one time so the timer can run
-// yes - just choose
-// no - go back to selection

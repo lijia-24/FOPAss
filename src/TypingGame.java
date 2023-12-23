@@ -225,7 +225,7 @@ public class TypingGame {
                                 showSettingsPage();
                             }
                         } else {
-                            System.exit(0);
+                            showGameModeSelectionPage();
                         }
                     }
                 }
@@ -235,7 +235,7 @@ public class TypingGame {
         private boolean askUserIfWantsToPlayAgain() {
             int choice = JOptionPane.showOptionDialog(
                     null,
-                    "Do you want to play again?",
+                    "Do you want to play the TIMED MODE again?",
                     "Play Again",
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.QUESTION_MESSAGE,
@@ -246,6 +246,11 @@ public class TypingGame {
 
             return choice == JOptionPane.YES_OPTION;
         }
+    }
+
+    private void showGameModeSelectionPage() {
+        GameModeSelection gameModeSelection = new GameModeSelection();
+        gameModeSelection.showModeSelectionPage();
     }
 
     private GameType askUserForGameType() {
