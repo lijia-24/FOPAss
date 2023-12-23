@@ -11,13 +11,15 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
+
 // 2.1
 // mistakes made?
 
 public class TypingGame {
     private static final int TOTAL_WORDS = 10;
-    private static final int INITIAL_TIME = 5;
+    private static final int INITIAL_TIME = 30;
     private int incorrectWordCount;
+    private int timerDuration; // Added variable to store timer duration
     private enum GameType { SAME_TEXT, DIFFERENT_TEXT };
     private JLabel timerLabel;
     private JTextPane wordPane;
@@ -28,6 +30,7 @@ public class TypingGame {
     private String[] printedWords;
     private boolean gameStarted;
     private boolean scoreDialogShown;
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -53,6 +56,37 @@ public class TypingGame {
             e.printStackTrace();
         }
 
+        Object[] options = {"15 seconds", "30 seconds", "45 seconds", "60 seconds"};
+        int selectedOption = JOptionPane.showOptionDialog(
+                null,
+                "Choose the timer duration:",
+                "Timer Duration",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,
+                options,
+                options[0]
+        );
+
+        // Set timer duration based on the player's choice
+        switch (selectedOption) {
+            case 0:
+                timerDuration = 15;
+                break;
+            case 1:
+                timerDuration = 30;
+                break;
+            case 2:
+                timerDuration = 45;
+                break;
+            case 3:
+                timerDuration = 60;
+                break;
+            default:
+                timerDuration = INITIAL_TIME; // Default to INITIAL_TIME if an unexpected option is selected
+        }
+
+
         timerLabel = new JLabel("Press any key to start", SwingConstants.CENTER);
         timerLabel.setFont(timerLabel.getFont().deriveFont(16.0f));
         frame.add(timerLabel, BorderLayout.NORTH);
@@ -71,10 +105,11 @@ public class TypingGame {
 
         // Load words, but don't start the timer immediately
         loadWords();
+
     }
 
     private void startGame() {
-        remainingTime = INITIAL_TIME;
+        remainingTime = timerDuration; // Initialize remainingTime with timerDuration
         updateTimerLabel();
 
         // Stop the previous timer if it exists
@@ -96,15 +131,42 @@ public class TypingGame {
         printedWords = new String[TOTAL_WORDS];
         StringBuilder wordDisplay = new StringBuilder();
 
+        // Ask the user whether to include punctuation
+        int includePunctuationOption = JOptionPane.showConfirmDialog(
+                null,
+                "Include punctuation in words?",
+                "Include Punctuation",
+                JOptionPane.YES_NO_OPTION
+        );
+
+        boolean includePunctuation = (includePunctuationOption == JOptionPane.YES_OPTION);
+
         for (int i = 0; i < TOTAL_WORDS; i++) {
-            String randomWord = words.get(random.nextInt(words.size()));
+            String randomWord = getRandomWord(words, random, includePunctuation);
             printedWords[i] = randomWord;
             wordDisplay.append(randomWord).append(" ");
         }
 
-        remainingTime = INITIAL_TIME; // Reset the remaining time
+        remainingTime = timerDuration; // Set the timer duration
 
         showWordsWithColor(wordDisplay.toString(), Color.DARK_GRAY);
+    }
+
+    // Helper method to get a random word with optional punctuation
+    private String getRandomWord(List<String> words, Random random, boolean includePunctuation) {
+        String word = words.get(random.nextInt(words.size()));
+
+        // Include punctuation based on the user's choice
+        if (includePunctuation && random.nextDouble() < 0.2) {
+            String[] punctuation = {",", ".", "!", "?", "\"", "\""};
+            word += punctuation[random.nextInt(punctuation.length)];
+        }
+
+        return word;
+    }
+
+    private void updateTimerLabel() {
+        timerLabel.setText("Time remaining: " + remainingTime + " seconds (of " + timerDuration + " seconds)");
     }
 
 
@@ -118,10 +180,6 @@ public class TypingGame {
             throw new RuntimeException(e);
         }
         return words;
-    }
-
-    private void updateTimerLabel() {
-        timerLabel.setText("Time remaining: " + remainingTime + " seconds");
     }
 
     private void showWordsWithColor(String text, Color color) {
