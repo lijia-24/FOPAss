@@ -11,81 +11,51 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
-
-// 2.1
-// mistakes made?
-
 public class TypingGame {
     private static final int TOTAL_WORDS = 10;
     private static final int INITIAL_TIME = 30;
     private int incorrectWordCount;
-    private int timerDuration; // Added variable to store timer duration
-    private enum GameType { SAME_TEXT, DIFFERENT_TEXT };
-    private JLabel timerLabel;
-    private JTextPane wordPane;
-    private JTextField inputField;
-
-    private Timer timer;
-    private int remainingTime;
+    private int timerDuration;
+    private boolean includePunctuation;
     private String[] printedWords;
     private boolean gameStarted;
     private boolean scoreDialogShown;
+    private JLabel timerLabel;
+    private JTextPane wordPane;
+    private JTextField inputField;
+    private Timer timer;
+    private int remainingTime;
 
+    private enum GameType {SAME_TEXT, DIFFERENT_TEXT}
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            TypingGame game = new TypingGame();
-            game.createAndShowGUI();
+            TypingGame typingGame = new TypingGame();
+            typingGame.showSettingsPage();
         });
     }
 
-    private void createAndShowGUI() {
+    private void showSettingsPage() {
+        SettingsPage settingsPage = new SettingsPage();
+        settingsPage.createAndShowSettings();
+    }
+
+    private void createAndShowGameGUI() {
         JFrame frame = new JFrame("Type-A-Thon");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(400, 300);
+        frame.setSize(600, 400);  // Larger window size
         frame.setLayout(new BorderLayout());
         frame.setLocationRelativeTo(null);
 
         try {
-            // Load the image for the icon
             Image iconImage = new ImageIcon(new File("src/typing.png").toURI().toURL()).getImage();
-
-            // Set the icon image for the frame
             frame.setIconImage(iconImage);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        Object[] options = {"15 seconds", "30 seconds", "45 seconds", "60 seconds"};
-        int selectedOption = JOptionPane.showOptionDialog(
-                null,
-                "Choose the timer duration:",
-                "Timer Duration",
-                JOptionPane.DEFAULT_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                options,
-                options[0]
-        );
-
-        // Set timer duration based on the player's choice
-        switch (selectedOption) {
-            case 0:
-                timerDuration = 15;
-                break;
-            case 1:
-                timerDuration = 30;
-                break;
-            case 2:
-                timerDuration = 45;
-                break;
-            case 3:
-                timerDuration = 60;
-                break;
-            default:
-                timerDuration = INITIAL_TIME; // Default to INITIAL_TIME if an unexpected option is selected
-        }
-
+        includePunctuation = false;
+        gameStarted = false;
 
         timerLabel = new JLabel("Press any key to start", SwingConstants.CENTER);
         timerLabel.setFont(timerLabel.getFont().deriveFont(16.0f));
@@ -103,25 +73,7 @@ public class TypingGame {
 
         frame.setVisible(true);
 
-        // Load words, but don't start the timer immediately
         loadWords();
-
-    }
-
-    private void startGame() {
-        remainingTime = timerDuration; // Initialize remainingTime with timerDuration
-        updateTimerLabel();
-
-        // Stop the previous timer if it exists
-        if (timer != null) {
-            timer.stop();
-        }
-
-        // Create a new Timer object
-        timer = new Timer(1000, new TimerActionListener());
-        timer.start();
-
-        inputField.requestFocus();
     }
 
     private void loadWords() {
@@ -131,32 +83,34 @@ public class TypingGame {
         printedWords = new String[TOTAL_WORDS];
         StringBuilder wordDisplay = new StringBuilder();
 
-        // Ask the user whether to include punctuation
-        int includePunctuationOption = JOptionPane.showConfirmDialog(
-                null,
-                "Include punctuation in words?",
-                "Include Punctuation",
-                JOptionPane.YES_NO_OPTION
-        );
-
-        boolean includePunctuation = (includePunctuationOption == JOptionPane.YES_OPTION);
-
         for (int i = 0; i < TOTAL_WORDS; i++) {
             String randomWord = getRandomWord(words, random, includePunctuation);
             printedWords[i] = randomWord;
             wordDisplay.append(randomWord).append(" ");
         }
 
-        remainingTime = timerDuration; // Set the timer duration
+        remainingTime = timerDuration;
 
         showWordsWithColor(wordDisplay.toString(), Color.DARK_GRAY);
     }
 
-    // Helper method to get a random word with optional punctuation
+    private void startGame() {
+        remainingTime = timerDuration;
+        updateTimerLabel();
+
+        if (timer != null) {
+            timer.stop();
+        }
+
+        timer = new Timer(1000, new TimerActionListener());
+        timer.start();
+
+        inputField.requestFocus();
+    }
+
     private String getRandomWord(List<String> words, Random random, boolean includePunctuation) {
         String word = words.get(random.nextInt(words.size()));
 
-        // Include punctuation based on the user's choice
         if (includePunctuation && random.nextDouble() < 0.2) {
             String[] punctuation = {",", ".", "!", "?", "\"", "\""};
             word += punctuation[random.nextInt(punctuation.length)];
@@ -168,7 +122,6 @@ public class TypingGame {
     private void updateTimerLabel() {
         timerLabel.setText("Time remaining: " + remainingTime + " seconds (of " + timerDuration + " seconds)");
     }
-
 
     private List<String> readWordsFromFile() {
         List<String> words = new java.util.ArrayList<>();
@@ -210,7 +163,6 @@ public class TypingGame {
                     }
                     charIndex++;
                 } else {
-                    // If there are remaining characters in printedWord, set their color to DARK_GRAY
                     StyleConstants.setForeground(set, Color.DARK_GRAY);
                 }
 
@@ -218,11 +170,9 @@ public class TypingGame {
                 cursorPosition++;
             }
 
-            // Add space between words (except for the last word)
             if (i < printedWords.length - 1) {
-                // Check for space after the typed text
                 if (charIndex < typedText.length() && typedText.charAt(charIndex) == ' ') {
-                    StyleConstants.setForeground(originalSet, Color.GREEN); // Set space color to GREEN
+                    StyleConstants.setForeground(originalSet, Color.GREEN);
                     charIndex++;
                 } else {
                     StyleConstants.setForeground(originalSet, Color.DARK_GRAY);
@@ -241,47 +191,32 @@ public class TypingGame {
                     remainingTime--;
                     updateTimerLabel();
                 } else {
-                    // Stop the timer first
                     timer.stop();
-
-                    // Set the timer object to null
                     timer = null;
-
                     inputField.setEnabled(false);
 
-                    // Check if the score dialog has already been shown
                     if (!scoreDialogShown) {
                         String[] userType = inputField.getText().split(" ");
                         accuracyAndWPM(userType);
 
-                        // Set the flag to true to indicate that the score dialog has been shown
                         scoreDialogShown = true;
 
-                        // Clear input field and word area for the next game
                         inputField.setText("");
                         wordPane.setText("");
 
-                        // Start a new game
                         gameStarted = false;
                         inputField.setEnabled(true);
 
-                        // Ask the user whether to play again or not
                         if (askUserIfWantsToPlayAgain()) {
-                            // Reset the scoreDialogShown flag for the new game
                             scoreDialogShown = false;
 
-                            // Ask the user whether to play again with the same text or different text
                             GameType userChoice = askUserForGameType();
                             if (userChoice == GameType.SAME_TEXT) {
-                                // Start a new game with the same text
                                 startGameWithSameText();
                             } else {
-                                // Start a new game with different text
-                                loadWords();  // Load new words for the user to input
-                                startGame();  // Create a new Timer object for a consistent timer
+                                showSettingsPage();
                             }
                         } else {
-                            // User chose not to play again, exit the program
                             System.exit(0);
                         }
                     }
@@ -321,18 +256,14 @@ public class TypingGame {
     }
 
     private void startGameWithSameText() {
-        // Display the same text the user just typed
         showWordsWithColor(String.join(" ", printedWords), Color.DARK_GRAY);
 
-        // Reset the timer and initialize it to the original time
         remainingTime = INITIAL_TIME;
         updateTimerLabel();
 
-        // Create a new Timer object
         timer = new Timer(1000, new TimerActionListener());
         timer.start();
     }
-
 
     private void accuracyAndWPM(String[] userType) {
         StyledDocument doc = wordPane.getStyledDocument();
@@ -356,7 +287,6 @@ public class TypingGame {
                 }
             }
 
-            // Add space between words (except for the last word)
             totalCharacters += (userWord.length() < printedWord.length()) ? 1 : 0;
         }
 
@@ -364,14 +294,10 @@ public class TypingGame {
         double wpm = (totalCharacters / 5.0) / (INITIAL_TIME / 60.0);
 
         JOptionPane.showMessageDialog(null,
-                String.format("Game Over!\nAccuracy: %.2f%%\nWPM: %.2f\nIncorrect Words: %d",
+                String.format("Game Over!\nAccuracy: %.2f%%\nWPM: %.2f\nMistakes: %d",
                         accuracy, wpm, incorrectWordCount),
                 "Game Over", JOptionPane.INFORMATION_MESSAGE);
     }
-
-
-
-
 
     private class InputDocumentListener implements DocumentListener {
         @Override
@@ -392,15 +318,60 @@ public class TypingGame {
         private void handleTextChange() {
             if (!gameStarted) {
                 gameStarted = true;
-                startGame(); // Start the game when the user types the first character
+                startGame();
             }
 
-            // Get the current typed text
             String typedText = inputField.getText();
             updateColorsForTypedText(typedText);
         }
     }
+
+    private class SettingsPage {
+        private JFrame settingsFrame;
+        private JSlider timerSlider;
+        private JCheckBox punctuationCheckBox;
+
+        public void createAndShowSettings() {
+            settingsFrame = new JFrame("Settings");
+            settingsFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            settingsFrame.setSize(300, 250);  // Larger window size
+            settingsFrame.setLayout(new GridLayout(4, 2, 10, 10));
+
+            JLabel timerLabel = new JLabel("Timer Duration:");
+            timerSlider = new JSlider(15, 60, INITIAL_TIME);
+            timerSlider.setMajorTickSpacing(15);
+            timerSlider.setMinorTickSpacing(5);
+            timerSlider.setPaintTicks(true);
+            timerSlider.setPaintLabels(true);
+
+            JLabel punctuationLabel = new JLabel("Include Punctuation:");
+            punctuationCheckBox = new JCheckBox();
+
+            JButton okButton = new JButton("OK");
+
+            settingsFrame.add(timerLabel);
+            settingsFrame.add(timerSlider);
+            settingsFrame.add(punctuationLabel);
+            settingsFrame.add(punctuationCheckBox);
+            settingsFrame.add(okButton);
+
+            okButton.addActionListener(e -> {
+                timerDuration = timerSlider.getValue();
+                includePunctuation = punctuationCheckBox.isSelected();
+
+                settingsFrame.dispose();
+
+                createAndShowGameGUI();
+            });
+
+            settingsFrame.setLocationRelativeTo(null);
+            settingsFrame.setVisible(true);
+        }
+    }
 }
+
+
+
 
 
 
