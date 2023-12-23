@@ -33,7 +33,7 @@ public class TypingGame {
         });
     }
 
-    private void showSettingsPage() {
+    public void showSettingsPage() {
         SettingsPage settingsPage = new SettingsPage();
         settingsPage.createAndShowSettings();
     }
