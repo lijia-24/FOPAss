@@ -198,7 +198,11 @@ public class WordMode {
 
         // Initialize the start time when the game is initialized
         initializeStartTime();
+
+        // Load words only once when the game starts
+        loadWords();
     }
+
 
     private void endWordModeGame() {
         if (gameStarted) {
@@ -265,41 +269,40 @@ public class WordMode {
             e.printStackTrace();
         }
     }
-
-    private class InputDocumentListener implements DocumentListener {
-        @Override
-        public void insertUpdate(DocumentEvent e) {
-            handleTextChange();
-        }
-
-        @Override
-        public void removeUpdate(DocumentEvent e) {
-            handleTextChange();
-        }
-
-        @Override
-        public void changedUpdate(DocumentEvent e) {
-            // Plain text components don't fire these events
-        }
-
-        private void handleTextChange() {
-            String typedText = inputField.getText().trim();
-
-            if (!gameStarted) {
-                gameStarted = true;
-                startTime = System.currentTimeMillis();
-                loadWords(); // Load words when the game starts
-
-                // Start the timer here, after the game has started
-                Timer timer = new Timer(1000, timerEvent -> updateStopwatch());
-                timer.start();
+        private class InputDocumentListener implements DocumentListener {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                handleTextChange();
             }
 
-            updateColorsForTypedText(typedText);
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                handleTextChange();
+            }
 
-            // Check if the typed text is equal to or contains the last word
-            if (typedText.contains(printedWords[printedWords.length - 1])) {
-                endWordModeGame();
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                // Plain text components don't fire these events
+            }
+
+            private void handleTextChange() {
+                String typedText = inputField.getText().trim();
+
+                if (!gameStarted) {
+                    gameStarted = true;
+                    startTime = System.currentTimeMillis();
+
+                    // Start the timer here, after the game has started
+                    Timer timer = new Timer(1000, timerEvent -> updateStopwatch());
+                    timer.start();
+                }
+
+                updateColorsForTypedText(typedText);
+
+                // Check if the typed text is equal to or contains the last word
+                if (typedText.contains(printedWords[printedWords.length - 1])) {
+                    endWordModeGame();
+                }
             }
         }
 
@@ -344,8 +347,6 @@ public class WordMode {
                 }
             }
         }
-    }
-
 
     private void accuracyAndWPM(String[] userType, long elapsedTime) {
         StyledDocument doc = wordPane.getStyledDocument();
@@ -810,4 +811,4 @@ public class WordMode {
 }
  */
 
-// 3 num of characters is same then end auto
+// num of characters is same then end auto
