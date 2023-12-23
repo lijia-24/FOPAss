@@ -12,8 +12,6 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class TypingGame {
-    private static final int TOTAL_WORDS = 10;
-    private static final int INITIAL_TIME = 30;
     private int incorrectWordCount;
     private int timerDuration;
     private boolean includePunctuation;
@@ -43,7 +41,7 @@ public class TypingGame {
     private void createAndShowGameGUI() {
         JFrame frame = new JFrame("Type-A-Thon");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 400);  // Larger window size
+        frame.setSize(600, 400);
         frame.setLayout(new BorderLayout());
         frame.setLocationRelativeTo(null);
 
@@ -80,10 +78,11 @@ public class TypingGame {
         Random random = new Random();
         List<String> words = readWordsFromFile();
 
-        printedWords = new String[TOTAL_WORDS];
+        int totalWords = timerDuration * 2;
+        printedWords = new String[totalWords];
         StringBuilder wordDisplay = new StringBuilder();
 
-        for (int i = 0; i < TOTAL_WORDS; i++) {
+        for (int i = 0; i < totalWords; i++) {
             String randomWord = getRandomWord(words, random, includePunctuation);
             printedWords[i] = randomWord;
             wordDisplay.append(randomWord).append(" ");
@@ -92,6 +91,17 @@ public class TypingGame {
         remainingTime = timerDuration;
 
         showWordsWithColor(wordDisplay.toString(), Color.DARK_GRAY);
+    }
+
+    private String getRandomWord(List<String> words, Random random, boolean includePunctuation) {
+        String word = words.get(random.nextInt(words.size()));
+
+        if (includePunctuation && random.nextDouble() < 0.2) {
+            String[] punctuation = {",", ".", "!", "?", "\""};
+            word += punctuation[random.nextInt(punctuation.length)];
+        }
+
+        return word;
     }
 
     private void startGame() {
@@ -106,17 +116,6 @@ public class TypingGame {
         timer.start();
 
         inputField.requestFocus();
-    }
-
-    private String getRandomWord(List<String> words, Random random, boolean includePunctuation) {
-        String word = words.get(random.nextInt(words.size()));
-
-        if (includePunctuation && random.nextDouble() < 0.4) {
-            String[] punctuation = {",", ".", "!", "?", "\"", "\""};
-            word += punctuation[random.nextInt(punctuation.length)];
-        }
-
-        return word;
     }
 
     private void updateTimerLabel() {
@@ -139,9 +138,18 @@ public class TypingGame {
         StyledDocument doc = wordPane.getStyledDocument();
         SimpleAttributeSet set = new SimpleAttributeSet();
         StyleConstants.setForeground(set, color);
-        doc.setCharacterAttributes(0, doc.getLength(), set, true);
+
+        String[] words = text.split("\\s");
+        int cursorPosition = 0;
+
+        for (String word : words) {
+            doc.setCharacterAttributes(cursorPosition, word.length(), set, false);
+            cursorPosition += word.length() + 1; // +1 to account for the space
+        }
+
         wordPane.setText(text);
     }
+
 
     private void updateColorsForTypedText(String typedText) {
         StyledDocument doc = wordPane.getStyledDocument();
@@ -258,7 +266,7 @@ public class TypingGame {
     private void startGameWithSameText() {
         showWordsWithColor(String.join(" ", printedWords), Color.DARK_GRAY);
 
-        remainingTime = INITIAL_TIME;
+        remainingTime = timerDuration;
         updateTimerLabel();
 
         timer = new Timer(1000, new TimerActionListener());
@@ -291,7 +299,7 @@ public class TypingGame {
         }
 
         double accuracy = ((double) correctCharacters / totalCharacters) * 100;
-        double wpm = (totalCharacters / 5.0) / (INITIAL_TIME / 60.0);
+        double wpm = (totalCharacters / 5.0) / (timerDuration / 60.0);
 
         JOptionPane.showMessageDialog(null,
                 String.format("Game Over!\nAccuracy: %.2f%%\nWPM: %.2f\nMistakes: %d",
@@ -340,19 +348,24 @@ public class TypingGame {
 
             settingsFrame = new JFrame("Settings");
             settingsFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            settingsFrame.setSize(400, 400);  // Larger window size
+            settingsFrame.setSize(300, 250);
             settingsFrame.setLayout(new BorderLayout());
 
-            JPanel settingsPanel = new JPanel(new GridLayout(4, 2, 10, 10));
+            JPanel settingsPanel = new JPanel(new GridLayout(3, 2, 10, 10));
 
             JLabel timerLabel = new JLabel("Timer Duration:");
-            timerSlider = new JSlider(15, 60, INITIAL_TIME);
-            timerSlider.setMajorTickSpacing(15);
-            timerSlider.setMinorTickSpacing(5);
+            timerSlider = new JSlider();
+            timerSlider.setSnapToTicks(true);
             timerSlider.setPaintTicks(true);
+            timerSlider.setMajorTickSpacing(15);
+            timerSlider.setMaximum(60);
+            timerSlider.setMinimum(15);
+            timerSlider.setValue(30);
+            timerSlider.setLabelTable(timerSlider.createStandardLabels(15));
             timerSlider.setPaintLabels(true);
 
-            JLabel punctuationLabel = new JLabel("Include Punctuation:");
+
+            JLabel punctuationLabel = new JLabel("Punctuation:");
             punctuationCheckBox = new JCheckBox();
 
             settingsPanel.add(timerLabel);
@@ -388,78 +401,32 @@ public class TypingGame {
             // Initial update of the total words label
             updateTotalWordsLabel();
         }
-    } private void updateTotalWordsLabel() {
-        JLabel totalWordsLabel = new JLabel("Total Words: " + calculateTotalWords(), SwingConstants.CENTER);
-        Font labelFont = totalWordsLabel.getFont();
-        totalWordsLabel.setFont(labelFont.deriveFont(labelFont.getSize() * 1.5f));
 
-        JPanel settingsPanel = (JPanel) settingsFrame.getContentPane().getComponent(0);
-        settingsPanel.add(totalWordsLabel, 6);  // Index 6 corresponds to the position where the label should be added
-        settingsFrame.validate();
-        settingsFrame.repaint();
-    }
+        private void updateTotalWordsLabel() {
+            JLabel totalWordsLabel = new JLabel("Total Words: " + calculateTotalWords(), SwingConstants.CENTER);
+            Font labelFont = totalWordsLabel.getFont();
+            totalWordsLabel.setFont(labelFont.deriveFont(labelFont.getSize() * 1.5f));
 
-    private int calculateTotalWords() {
-        int timerValue = timerSlider.getValue();
-        if (timerValue <= 15) {
-            return 100;
-        } else if (timerValue <= 30) {
-            return 200;
-        } else if (timerValue <= 45) {
-            return 300;
-        } else {
-            return 400;
+            JPanel settingsPanel = (JPanel) settingsFrame.getContentPane().getComponent(0);
+            settingsPanel.add(totalWordsLabel, 6);
+            settingsFrame.validate();
+            settingsFrame.repaint();
         }
-    }
-}
 
-// world - wor = 3 correct
-// example - examplee = correct, but have 1 incorrect
-    /*
-private void accuracyAndWPM(String[] userType) {
-    StyledDocument doc = wordPane.getStyledDocument();
-    int correctCharacters = 0;
-    int totalCharacters = 0;
-    int cursorPosition = 0;
-    incorrectWordCount = 0;
-
-    for (int i = 0; i < Math.min(userType.length, printedWords.length); i++) {
-        String userWord = userType[i];
-        String printedWord = printedWords[i];
-
-        int minLength = Math.min(userWord.length(), printedWord.length());
-        int lastCorrectPosition = 0; // Track the last correct character position
-
-        for (int j = 0; j < userWord.length(); j++) {
-            totalCharacters++;
-            if (j < printedWord.length() && userWord.charAt(j) == printedWord.charAt(j)) {
-                correctCharacters++;
-                lastCorrectPosition = j + 1; // Update last correct position
-            } else {
-                // Count mistakes only after the last correct position
-                if (j >= lastCorrectPosition) {
-                    incorrectWordCount++;
-                }
+        private int calculateTotalWords() {
+            int selectedTimerValue = timerSlider.getValue();
+            switch (selectedTimerValue) {
+                case 15:
+                    return 100;
+                case 30:
+                    return 200;
+                case 45:
+                    return 300;
+                case 60:
+                    return 400;
+                default:
+                    return 200; // Default value
             }
         }
-
-        // Add space between words (except for the last word)
-        totalCharacters += (userWord.length() < printedWord.length()) ? 1 : 0;
     }
-
-    double accuracy = ((double) correctCharacters / totalCharacters) * 100;
-    double wpm = (totalCharacters / 5.0) / (INITIAL_TIME / 60.0);
-
-    JOptionPane.showMessageDialog(null,
-            String.format("Game Over!\nAccuracy: %.2f%%\nWPM: %.2f\nIncorrect Words: %d",
-                    accuracy, wpm, incorrectWordCount),
-            "Game Over", JOptionPane.INFORMATION_MESSAGE);
 }
-*/
-
-//?? if hello - helloo c-? inc-?
-//?? if hello - hell c-? inc-?
-//?? if hello - helo c-? inc-?
-//?? backspace - inc, accuracy & wpm?
-//?? last word - if not finish type the correct character still count correct?
-
