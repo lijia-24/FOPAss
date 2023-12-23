@@ -111,7 +111,7 @@ public class TypingGame {
     private String getRandomWord(List<String> words, Random random, boolean includePunctuation) {
         String word = words.get(random.nextInt(words.size()));
 
-        if (includePunctuation && random.nextDouble() < 0.2) {
+        if (includePunctuation && random.nextDouble() < 0.4) {
             String[] punctuation = {",", ".", "!", "?", "\"", "\""};
             word += punctuation[random.nextInt(punctuation.length)];
         }
@@ -332,10 +332,18 @@ public class TypingGame {
         private JCheckBox punctuationCheckBox;
 
         public void createAndShowSettings() {
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
             settingsFrame = new JFrame("Settings");
             settingsFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            settingsFrame.setSize(300, 250);  // Larger window size
-            settingsFrame.setLayout(new GridLayout(4, 2, 10, 10));
+            settingsFrame.setSize(400, 400);  // Larger window size
+            settingsFrame.setLayout(new BorderLayout());
+
+            JPanel settingsPanel = new JPanel(new GridLayout(4, 2, 10, 10));
 
             JLabel timerLabel = new JLabel("Timer Duration:");
             timerSlider = new JSlider(15, 60, INITIAL_TIME);
@@ -347,33 +355,63 @@ public class TypingGame {
             JLabel punctuationLabel = new JLabel("Include Punctuation:");
             punctuationCheckBox = new JCheckBox();
 
+            settingsPanel.add(timerLabel);
+            settingsPanel.add(timerSlider);
+            settingsPanel.add(punctuationLabel);
+            settingsPanel.add(punctuationCheckBox);
+
             JButton okButton = new JButton("OK");
-
-            settingsFrame.add(timerLabel);
-            settingsFrame.add(timerSlider);
-            settingsFrame.add(punctuationLabel);
-            settingsFrame.add(punctuationCheckBox);
-            settingsFrame.add(okButton);
-
             okButton.addActionListener(e -> {
                 timerDuration = timerSlider.getValue();
                 includePunctuation = punctuationCheckBox.isSelected();
-
                 settingsFrame.dispose();
-
                 createAndShowGameGUI();
             });
 
+            JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+            buttonPanel.add(okButton);
+
+            settingsFrame.add(settingsPanel, BorderLayout.CENTER);
+            settingsFrame.add(buttonPanel, BorderLayout.SOUTH);
+
+            // Increase the font size of labels
+            Font labelFont = timerLabel.getFont();
+            timerLabel.setFont(labelFont.deriveFont(labelFont.getSize() * 1.5f));
+            punctuationLabel.setFont(labelFont.deriveFont(labelFont.getSize() * 1.5f));
+
+            // Adjust total words based on timer duration
+            timerSlider.addChangeListener(e -> updateTotalWordsLabel());
+
             settingsFrame.setLocationRelativeTo(null);
             settingsFrame.setVisible(true);
+
+            // Initial update of the total words label
+            updateTotalWordsLabel();
+        }
+    } private void updateTotalWordsLabel() {
+        JLabel totalWordsLabel = new JLabel("Total Words: " + calculateTotalWords(), SwingConstants.CENTER);
+        Font labelFont = totalWordsLabel.getFont();
+        totalWordsLabel.setFont(labelFont.deriveFont(labelFont.getSize() * 1.5f));
+
+        JPanel settingsPanel = (JPanel) settingsFrame.getContentPane().getComponent(0);
+        settingsPanel.add(totalWordsLabel, 6);  // Index 6 corresponds to the position where the label should be added
+        settingsFrame.validate();
+        settingsFrame.repaint();
+    }
+
+    private int calculateTotalWords() {
+        int timerValue = timerSlider.getValue();
+        if (timerValue <= 15) {
+            return 100;
+        } else if (timerValue <= 30) {
+            return 200;
+        } else if (timerValue <= 45) {
+            return 300;
+        } else {
+            return 400;
         }
     }
 }
-
-
-
-
-
 
 // world - wor = 3 correct
 // example - examplee = correct, but have 1 incorrect

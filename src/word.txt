@@ -1688,6 +1688,7 @@ motor
 mount
 mountain
 mouse
+mice
 mouth
 move
 movement
@@ -1936,6 +1937,9 @@ phrase
 physical
 physically
 physician
+pineapple
+peach
+peacock
 piano
 pick
 picture
@@ -2976,6 +2980,7 @@ writer
 writing
 wrong
 yard
+yatch
 yeah
 year
 yell
@@ -2991,3 +2996,5 @@ yours
 yourself
 youth
 zone
+zebra
+zoo
