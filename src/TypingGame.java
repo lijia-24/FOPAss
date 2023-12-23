@@ -83,7 +83,7 @@ public class TypingGame {
         StringBuilder wordDisplay = new StringBuilder();
 
         for (int i = 0; i < totalWords; i++) {
-            String randomWord = getRandomWord(words, random, includePunctuation);
+            String randomWord = getRandomWord(words, random);
             printedWords[i] = randomWord;
             wordDisplay.append(randomWord).append(" ");
         }
@@ -93,16 +93,18 @@ public class TypingGame {
         showWordsWithColor(wordDisplay.toString(), Color.DARK_GRAY);
     }
 
-    private String getRandomWord(List<String> words, Random random, boolean includePunctuation) {
+    private String getRandomWord(List<String> words, Random random) {
         String word = words.get(random.nextInt(words.size()));
 
-        if (includePunctuation && random.nextDouble() < 0.2) {
+        // Add punctuation with a probability of 40% if includePunctuation is true
+        if (includePunctuation && random.nextDouble() < 0.4) {
             String[] punctuation = {",", ".", "!", "?", "\""};
             word += punctuation[random.nextInt(punctuation.length)];
         }
 
         return word;
     }
+
 
     private void startGame() {
         remainingTime = timerDuration;
@@ -147,7 +149,12 @@ public class TypingGame {
             cursorPosition += word.length() + 1; // +1 to account for the space
         }
 
-        wordPane.setText(text);
+        try {
+            doc.remove(0, doc.getLength());
+            doc.insertString(0, text, set);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
     }
 
 

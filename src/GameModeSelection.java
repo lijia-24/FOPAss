@@ -63,3 +63,5 @@ public class GameModeSelection {
         wordMode.showWordModeOptions(); // Call showWordModeOptions on WordMode instance
     }
 }
+
+// need exit? or just the x button
