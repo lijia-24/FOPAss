@@ -146,19 +146,11 @@ public class WordMode {
         return words.get(random.nextInt(words.size()));
     }
 
-    public void startGame() {
-        // Instead of providing a default word count, show the word count options
-        currentState = GameState.WORD_SELECTION;
-        frame.getContentPane().removeAll();
-        showWordModeOptions();
-        frame.revalidate();
-        frame.repaint();
-    }
 
     private void initializeGame() {
         frame.getContentPane().removeAll();
 
-        stopwatchLabel = new JLabel("00:00");
+        stopwatchLabel = new JLabel("Press any key to start.");
         stopwatchLabel.setFont(stopwatchLabel.getFont().deriveFont(20.0f));
         stopwatchLabel.setHorizontalAlignment(SwingConstants.CENTER);
         frame.add(stopwatchLabel, BorderLayout.NORTH);
