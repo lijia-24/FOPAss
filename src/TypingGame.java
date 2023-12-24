@@ -325,8 +325,9 @@ public class TypingGame {
     }
 
     private void storeResult(String fileName, String result) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true))) {
             writer.write(result);
+            writer.newLine(); // Add a new line for each result to separate them
         } catch (IOException e) {
             e.printStackTrace();
         }
