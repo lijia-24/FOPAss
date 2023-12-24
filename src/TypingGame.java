@@ -10,6 +10,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 
 public class TypingGame {
     private int incorrectWordCount;
@@ -317,6 +319,17 @@ public class TypingGame {
                 String.format("Game Over!\nAccuracy: %.2f%%\nWPM: %.2f\nMistakes: %d",
                         accuracy, wpm, incorrectWordCount),
                 "Game Over", JOptionPane.INFORMATION_MESSAGE);
+
+        storeResult("accuracytimed.txt", String.format("%.2f%%", accuracy));
+        storeResult("wpmtimed.txt", String.format("%.2f", wpm));
+    }
+
+    private void storeResult(String fileName, String result) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+            writer.write(result);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private class InputDocumentListener implements DocumentListener {

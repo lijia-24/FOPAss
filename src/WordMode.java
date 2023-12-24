@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 
 
 // last words correct then end auto
@@ -197,10 +199,12 @@ public class WordMode {
 
     private void endWordModeGame() {
         if (gameStarted) {
+            // Stop the timer
+            gameStarted = false;
+
             long elapsedTime = System.currentTimeMillis() - startTime;
             updateStopwatchLabel(elapsedTime);
 
-            gameStarted = false;
             inputField.setEnabled(false);
 
             // Rest of the code for calculating accuracy and WPM remains unchanged
@@ -210,6 +214,10 @@ public class WordMode {
             wordPane.setText("");
 
             inputField.setEnabled(true);
+
+            // Reset the timer and set gameStarted to false
+            startTime = System.currentTimeMillis();
+            updateStopwatchLabel(0);
 
             // Notify the end-game listener
             if (endGameListener != null) {
@@ -233,6 +241,7 @@ public class WordMode {
             }
         }
     }
+
 
 
 
@@ -381,7 +390,19 @@ public class WordMode {
                 String.format("Game Over!\n%s\n%s\n%s\n%s", timeUsedInfo, accuracyInfo, wpmInfo, mistakesInfo),
                 "Game Over", JOptionPane.INFORMATION_MESSAGE);
 
+        storeResult("accuracyWord.txt", String.format("%.2f%%", accuracy));
+        storeResult("wpmWord.txt", String.format("%.2f", wpm));
+
+
         endWordModeGame();
+    }
+
+    private void storeResult(String fileName, String result) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName))) {
+            writer.write(result);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void initializeStartTime() {
