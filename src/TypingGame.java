@@ -13,6 +13,8 @@ import java.util.Scanner;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 
+// if space then go to next word, so extra didnt affect the score
+
 public class TypingGame {
     private int incorrectWordCount;
     private int timerDuration;

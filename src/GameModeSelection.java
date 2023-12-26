@@ -18,7 +18,7 @@ public class GameModeSelection {
 
         JButton timedButton = createModeButton("Timed Mode", e -> startTimedGame());
         JButton wordsButton = createModeButton("Words Mode", e -> startWordsGame());
-        JButton quotesButton = createDisabledModeButton("Quotes Mode (Coming Soon)");
+        JButton quotesButton = createModeButton("Quotes Mode", e -> startQuotesGame());
 
         panel.add(timedButton);
         panel.add(wordsButton);
@@ -62,7 +62,12 @@ public class GameModeSelection {
         });
         wordMode.showWordModeOptions(); // Call showWordModeOptions on WordMode instance
     }
-}
 
-// need exit? or just the x button
+    private void startQuotesGame() {
+        QuoteMode quoteMode = new QuoteMode(this);
+        quoteMode.setEndGameListener(() -> {
+            showModeSelectionPage();
+        });
+    }
+}
 
