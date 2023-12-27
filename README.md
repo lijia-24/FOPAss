@@ -5,5 +5,3 @@ Problem:
 - after space cannot backspace
 - if more/less words still in the same words
 - For TIME mode, punctuation can't show
-- QUOTE mode can't change colour
-- WORD and QUOTE mode end when last word?? or enter
