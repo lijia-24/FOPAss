@@ -145,6 +145,7 @@ public class QuoteMode {
         }
     }
 
+
     private void showWordsWithColor(String text, Color color) {
         StyledDocument doc = wordPane.getStyledDocument();
         SimpleAttributeSet set = new SimpleAttributeSet();
@@ -164,40 +165,49 @@ public class QuoteMode {
     }
 
     private void updateColorsForTypedText(String typedText) {
-        StyledDocument doc = wordPane.getStyledDocument();
+        StyledDocument doc = quotePane.getStyledDocument();
         int cursorPosition = 0;
-        int charIndex = 0;
 
-        for (int i = 0; i < printedWords.length; i++) {
-            String printedWord = printedWords[i];
-            SimpleAttributeSet originalSet = new SimpleAttributeSet();
-            StyleConstants.setForeground(originalSet, Color.DARK_GRAY);
+        String[] typedWords = typedText.split("\\s");
 
-            for (int j = 0; j < printedWord.length(); j++) {
-                SimpleAttributeSet set = new SimpleAttributeSet();
-                if (charIndex < typedText.length()) {
-                    if (typedText.charAt(charIndex) == printedWord.charAt(j)) {
-                        StyleConstants.setForeground(set, Color.GREEN);
-                    } else {
-                        StyleConstants.setForeground(set, Color.RED);
-                    }
-                    charIndex++;
+        for (int j = 0; j < printedWords.length; j++) {
+            String printedWord = printedWords[j];
+            SimpleAttributeSet upperLayerSet = new SimpleAttributeSet(); // Create a new set for each word
+
+            String typedWord = (j < typedWords.length) ? typedWords[j] : "";
+
+            boolean wordCorrect = typedWord.equals(printedWord);
+
+            for (int i = 0; i < Math.max(typedWord.length(), printedWord.length()); i++) {
+                char typedChar = (i < typedWord.length()) ? typedWord.charAt(i) : ' ';
+                char printedChar = (i < printedWord.length()) ? printedWord.charAt(i) : ' ';
+
+                if (typedChar == printedChar) {
+                    // Correct character
+                    StyleConstants.setForeground(upperLayerSet, Color.GREEN);
+                } else if (i < typedWord.length()) {
+                    // Incorrect character in the typed word
+                    StyleConstants.setForeground(upperLayerSet, Color.RED);
                 } else {
-                    StyleConstants.setForeground(set, Color.DARK_GRAY);
+                    // Not typed yet
+                    StyleConstants.setForeground(upperLayerSet, Color.DARK_GRAY);
                 }
 
-                doc.setCharacterAttributes(cursorPosition, 1, set, false);
+                doc.setCharacterAttributes(cursorPosition, 1, upperLayerSet, false);
                 cursorPosition++;
+
+                if (printedChar == ' ') {
+                    // Handle spaces between words
+                    StyleConstants.setForeground(upperLayerSet, Color.DARK_GRAY);
+                    doc.setCharacterAttributes(cursorPosition, 1, upperLayerSet, false);
+                    cursorPosition++;
+                }
             }
 
-            if (i < printedWords.length - 1) {
-                if (charIndex < typedText.length() && typedText.charAt(charIndex) == ' ') {
-                    StyleConstants.setForeground(originalSet, Color.GREEN);
-                    charIndex++;
-                } else {
-                    StyleConstants.setForeground(originalSet, Color.DARK_GRAY);
-                }
-                doc.setCharacterAttributes(cursorPosition, 1, originalSet, false);
+            if (j < printedWords.length - 1) {
+                // Add a space between words
+                StyleConstants.setForeground(upperLayerSet, Color.DARK_GRAY);
+                doc.setCharacterAttributes(cursorPosition, 1, upperLayerSet, false);
                 cursorPosition++;
             }
         }
