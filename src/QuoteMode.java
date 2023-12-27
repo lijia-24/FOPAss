@@ -14,7 +14,6 @@ import java.util.Scanner;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 
-// nocolour
 public class QuoteMode {
     private enum GameState {
         MODE_SELECTION, PLAYING_GAME
@@ -23,6 +22,8 @@ public class QuoteMode {
     private List<QuoteAndSource> quoteAndSourceList;
     private boolean gameStarted;
     private JTextPane quotePane;
+    private JTextPane wordPane;
+    private String[] printedWords;
     private JTextField inputField;
     private long startTime;
     private JLabel stopwatchLabel;
@@ -49,7 +50,7 @@ public class QuoteMode {
     private void createAndShowQuoteModeGUI() {
         frame = new JFrame("Quote Mode");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(600, 400); // Increased frame size
+        frame.setSize(600, 400);
         frame.setLayout(new BorderLayout());
         frame.setLocationRelativeTo(null);
 
@@ -127,6 +128,8 @@ public class QuoteMode {
 
         startTime = System.currentTimeMillis();
         showQuote(quoteAndSource);
+        showWordsWithColor(quoteAndSource.getQuote(), Color.BLUE);
+        printedWords = quoteAndSource.getQuote().split("\\s");
     }
 
     private void showQuote(QuoteAndSource quoteAndSource) {
@@ -142,26 +145,61 @@ public class QuoteMode {
         }
     }
 
+    private void showWordsWithColor(String text, Color color) {
+        StyledDocument doc = wordPane.getStyledDocument();
+        SimpleAttributeSet set = new SimpleAttributeSet();
+        StyleConstants.setForeground(set, color);
+
+        String[] words = text.split("\\s");
+        int cursorPosition = 0;
+
+        for (String word : words) {
+            try {
+                doc.insertString(cursorPosition, word + " ", set);
+                cursorPosition += word.length() + 1; // +1 to account for the space
+            } catch (BadLocationException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private void updateColorsForTypedText(String typedText) {
-        StyledDocument doc = quotePane.getStyledDocument();
+        StyledDocument doc = wordPane.getStyledDocument();
         int cursorPosition = 0;
         int charIndex = 0;
 
-        for (int i = 0; i < quoteAndSourceList.get(0).getQuote().length(); i++) {
-            SimpleAttributeSet set = new SimpleAttributeSet();
-            if (charIndex < typedText.length()) {
-                if (typedText.charAt(charIndex) == quoteAndSourceList.get(0).getQuote().charAt(i)) {
-                    StyleConstants.setForeground(set, Color.GREEN);
+        for (int i = 0; i < printedWords.length; i++) {
+            String printedWord = printedWords[i];
+            SimpleAttributeSet originalSet = new SimpleAttributeSet();
+            StyleConstants.setForeground(originalSet, Color.DARK_GRAY);
+
+            for (int j = 0; j < printedWord.length(); j++) {
+                SimpleAttributeSet set = new SimpleAttributeSet();
+                if (charIndex < typedText.length()) {
+                    if (typedText.charAt(charIndex) == printedWord.charAt(j)) {
+                        StyleConstants.setForeground(set, Color.GREEN);
+                    } else {
+                        StyleConstants.setForeground(set, Color.RED);
+                    }
+                    charIndex++;
                 } else {
-                    StyleConstants.setForeground(set, Color.RED);
+                    StyleConstants.setForeground(set, Color.DARK_GRAY);
                 }
-                charIndex++;
-            } else {
-                StyleConstants.setForeground(set, Color.DARK_GRAY);
+
+                doc.setCharacterAttributes(cursorPosition, 1, set, false);
+                cursorPosition++;
             }
 
-            doc.setCharacterAttributes(cursorPosition, 1, set, false);
-            cursorPosition++;
+            if (i < printedWords.length - 1) {
+                if (charIndex < typedText.length() && typedText.charAt(charIndex) == ' ') {
+                    StyleConstants.setForeground(originalSet, Color.GREEN);
+                    charIndex++;
+                } else {
+                    StyleConstants.setForeground(originalSet, Color.DARK_GRAY);
+                }
+                doc.setCharacterAttributes(cursorPosition, 1, originalSet, false);
+                cursorPosition++;
+            }
         }
     }
 
@@ -182,6 +220,11 @@ public class QuoteMode {
         sourceLabel.setFont(sourceLabel.getFont().deriveFont(14.0f));
         sourceLabel.setForeground(Color.BLUE);
         frame.add(sourceLabel, BorderLayout.SOUTH);
+
+        wordPane = new JTextPane();
+        wordPane.setEditable(false);
+        wordPane.setFont(wordPane.getFont().deriveFont(16.0f));
+        frame.add(new JScrollPane(wordPane), BorderLayout.SOUTH);
 
         inputField = new JTextField();
         inputField.setFont(inputField.getFont().deriveFont(16.0f));
@@ -286,25 +329,40 @@ public class QuoteMode {
                 Timer timer = new Timer(1000, timerEvent -> updateStopwatch());
                 timer.start();
             }
+
+            updateColorsForTypedText(typedText);
         }
     }
 
     private void accuracyAndWPM(String userType, long elapsedTime, QuoteAndSource quoteAndSource) {
         StyledDocument doc = quotePane.getStyledDocument();
-        int correctCharacters = 0;
-        int totalCharacters = quoteAndSource.getQuote().length();
 
-        for (int i = 0; i < Math.min(userType.length(), quoteAndSource.getQuote().length()); i++) {
-            if (userType.charAt(i) == quoteAndSource.getQuote().charAt(i)) {
-                correctCharacters++;
+        String correctText = quoteAndSource.getQuote();
+        String typedText = userType;
+
+        int mistakes = 0;
+
+        int minLength = Math.min(correctText.length(), typedText.length());
+
+        for (int i = 0; i < minLength; i++) {
+            if (correctText.charAt(i) != typedText.charAt(i)) {
+                mistakes++;
             }
         }
 
-        double accuracy = ((double) correctCharacters / totalCharacters) * 100;
+        // If one text is longer than the other, count the extra characters as mistakes
+        mistakes += Math.abs(correctText.length() - typedText.length());
+
+        // Count backspaces as mistakes
+        int backspaceCount = Math.abs(correctText.length() - typedText.length());
+        mistakes += backspaceCount;
+
+        int totalCharacters = correctText.length();
+        double accuracy = ((double) (totalCharacters - mistakes) / totalCharacters) * 100;
         double wpm = (totalCharacters / 5.0) / (elapsedTime / 60000.0);
 
         String timeUsedInfo = String.format("Time Used: %02d:%02d", elapsedTime / 60000, (elapsedTime % 60000) / 1000);
-        String mistakesInfo = String.format("Mistakes: %d", totalCharacters - correctCharacters);
+        String mistakesInfo = String.format("Mistakes: %d", mistakes);
         String accuracyInfo = String.format("Accuracy: %.2f%%", accuracy);
         String wpmInfo = String.format("WPM: %.2f", wpm);
         String sourceInfo = "Source: " + quoteAndSource.getSource();
@@ -318,6 +376,7 @@ public class QuoteMode {
 
         endQuoteModeGame();
     }
+
 
     private void storeResult(String fileName, String result) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileName, true))) {
