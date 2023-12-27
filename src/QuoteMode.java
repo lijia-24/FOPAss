@@ -323,6 +323,9 @@ public class QuoteMode {
                 updateStopwatchLabel(0); // Reset the stopwatch label
             }
 
+            // Remove leading and trailing whitespaces
+            typedText = typedText.trim();
+
             if (typedText.endsWith("\n")) {
                 // Remove the Enter key character from the typed text
                 typedText = typedText.substring(0, typedText.length() - 1);
@@ -344,7 +347,7 @@ public class QuoteMode {
         }
     }
 
-    private void accuracyAndWPM(String userType, long elapsedTime, QuoteAndSource quoteAndSource) {
+        private void accuracyAndWPM(String userType, long elapsedTime, QuoteAndSource quoteAndSource) {
         StyledDocument doc = quotePane.getStyledDocument();
 
         String correctText = quoteAndSource.getQuote();
@@ -363,9 +366,9 @@ public class QuoteMode {
         // If one text is longer than the other, count the extra characters as mistakes
         mistakes += Math.abs(correctText.length() - typedText.length());
 
-        // Count backspaces as mistakes
-        int backspaceCount = Math.abs(correctText.length() - typedText.length());
-        mistakes += backspaceCount;
+        // Count backspaces as corrections, not mistakes
+        int backspaceCount = typedText.length() - typedText.replace("\b", "").length();
+        mistakes -= backspaceCount;
 
         int totalCharacters = correctText.length();
         double accuracy = ((double) (totalCharacters - mistakes) / totalCharacters) * 100;
